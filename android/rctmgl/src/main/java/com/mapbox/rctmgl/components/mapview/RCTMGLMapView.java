@@ -41,11 +41,13 @@ import com.mapbox.mapboxsdk.maps.MapboxMapOptions;
 import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.UiSettings;
 import com.mapbox.mapboxsdk.style.expressions.Expression;
+import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager;
 import com.mapbox.mapboxsdk.style.layers.Layer;
 import com.mapbox.android.gestures.MoveGestureDetector;
 import com.mapbox.rctmgl.components.AbstractMapFeature;
 import com.mapbox.rctmgl.components.annotation.RCTMGLCallout;
 import com.mapbox.rctmgl.components.annotation.RCTMGLPointAnnotation;
+import com.mapbox.rctmgl.components.annotation.RCTMGLMarkerView;
 import com.mapbox.rctmgl.components.camera.RCTMGLCamera;
 import com.mapbox.rctmgl.components.mapview.helpers.CameraChangeTracker;
 import com.mapbox.rctmgl.components.styles.layers.RCTLayer;
@@ -126,6 +128,8 @@ public class RCTMGLMapView extends MapView implements OnMapReadyCallback, Mapbox
 
     private HashSet<String> mHandledMapChangedEvents = null;
 
+    private MarkerViewManager makerViewManager = null;
+
     private boolean mAnnotationClicked = false;
 
     public RCTMGLMapView(Context context, RCTMGLMapViewManager manager, MapboxMapOptions options) {
@@ -195,6 +199,9 @@ public class RCTMGLMapView extends MapView implements OnMapReadyCallback, Mapbox
         } else if (childView instanceof RCTMGLPointAnnotation) {
             RCTMGLPointAnnotation annotation = (RCTMGLPointAnnotation) childView;
             mPointAnnotations.put(annotation.getID(), annotation);
+            feature = (AbstractMapFeature) childView;
+        } else if (childView instanceof RCTMGLMarkerView) {
+            RCTMGLMarkerView marker = (RCTMGLMarkerView) childView;
             feature = (AbstractMapFeature) childView;
         } else if (childView instanceof RCTMGLCamera) {
             RCTMGLCamera camera = (RCTMGLCamera) childView;
@@ -1220,5 +1227,14 @@ public class RCTMGLMapView extends MapView implements OnMapReadyCallback, Mapbox
         );
     }
 
+    public MarkerViewManager getMakerViewManager(MapboxMap map) {
+        if (makerViewManager == null) {
+            if (map == null) {
+                throw new Error("makerViewManager should be called one the map has loaded");
+            }
+            makerViewManager = new MarkerViewManager(this, map);
+        }
+        return makerViewManager;
+    }
 
 }
